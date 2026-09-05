@@ -1,4 +1,7 @@
 # Landing Page A/B Test Analysis
+
+![Tests](https://github.com/NaderaAlWahidi/apda-ab-test-21027897/actions/workflows/tests.yml/badge.svg)
+
 A reproducible analytics project testing whether a new landing page improves conversion rates compared to the control page.
 
 ## Project Question
@@ -47,8 +50,8 @@ apda-ab-test-STUDENT_ID/
 │   ├── group_summary.csv             
 │   ├── daily_conversion.csv          
 │   └── figures/
-│       ├── conversion_rate_barplot.png       
-│       └── daily_conversion_lineplot.png     
+│       ├── bar_conversion_rate_comparison.png       
+│       └── line_daily_conversion_trend.png
 │
 └── .github/
     └── workflows/
@@ -60,6 +63,7 @@ apda-ab-test-STUDENT_ID/
 ### Python Requirements
 - **Python 3.9+**
 - **Pandas**: Data manipulation
+- **NumPy**: Numerical operations
 - **DuckDB**: SQL analysis
 - **pytest**: Unit testing
 
@@ -196,8 +200,8 @@ Rscript r/ab_test.R
   - Interpretation with practical limitations
   
 - Generated figures:
-  - `outputs/figures/conversion_rate_barplot.png` (Figure 1)
-  - `outputs/figures/daily_conversion_lineplot.png` (Figure 2)
+  - `outputs/figures/bar_conversion_rate_comparison.png` (Figure 1)
+  - `outputs/figures/line_daily_conversion_trend.png` (Figure 2)
 
 ## Generated Outputs
 
@@ -216,8 +220,8 @@ Rscript r/ab_test.R
 ### Visualization Outputs
 | File | Purpose | Type |
 |------|---------|------|
-| `outputs/figures/conversion_rate_barplot.png` | Overall group comparison | Bar chart (PNG, 8×6", 300 DPI) |
-| `outputs/figures/daily_conversion_lineplot.png` | Temporal conversion trends | Line chart (PNG, 10×6", 300 DPI) |
+| `outputs/figures/bar_conversion_rate_comparison.png` | Overall group comparison | Bar chart (PNG, 6×5", 300 DPI) |
+| `outputs/figures/line_daily_conversion_trend.png` | Temporal conversion trends | Line chart (PNG, 8×5", 300 DPI) |
 
 ## Complete Workflow Example
 
@@ -286,10 +290,11 @@ The final recommendation considers:
 ### Python Requirements File
 The `requirements.txt` should contain:
 ```
-pandas==2.0.0
-duckdb==0.8.0
-pytest==7.4.0
-pytest-cov==4.1.0
+pandas>=2.0,<3.0
+numpy>=1.24,<3.0
+duckdb>=1.1,<2.0
+pytest>=7.0,<9.0
+pytest-cov>=4.0,<6.0
 ```
 
 Install with:
