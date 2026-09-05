@@ -16,6 +16,15 @@ names(data)
 
 library(scales)
 
+summary_stats <- data |>
+  group_by(group) |>
+  summarise(
+    users = n_distinct(user_id),
+    conversions = sum(converted),
+    conversion_rate = mean(converted),
+    .groups = "drop"
+  )
+
 control_rate <- summary_stats |> 
   filter(group == "control") |> 
   pull(conversion_rate)
@@ -46,7 +55,15 @@ total_treatment <- summary_stats |>
   filter(group == "treatment") |> 
   pull(users)
   
-x <- c(treatment_rate, control_rate)  # successes
+control_conversions <- summary_stats |> 
+  filter(group == "control") |> 
+  pull(conversions)
+
+treatment_conversions <- summary_stats |> 
+  filter(group == "treatment") |> 
+  pull(conversions)
+
+x <- c(treatment_conversions, control_conversions)  # successes
 n <- c(total_treatment, total_control)  # trials
 
 proportion_test <- prop.test(x, n, correct = FALSE)
