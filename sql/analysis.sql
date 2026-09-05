@@ -1,67 +1,30 @@
-DESCRIBE SELECT *
-
-FROM read_parquet(
-
-  'data/processed/practice_campaign.parquet'
-
-);
-
+-- 4.1: EXPERIMENT SUMMARY - Group Statistics
+SELECT 
+    group,
+    COUNT(DISTINCT user_id) AS users,
+    SUM(converted) AS conversions,
+    ROUND(SUM(converted)::FLOAT / COUNT(*)::FLOAT, 6) AS conversion_rate
+FROM 'data/processed/clean_ab_data.parquet'
+GROUP BY group
+ORDER BY group;
  
-
-SELECT *
-
-FROM read_parquet(
-
-  'data/processed/practice_campaign.parquet'
-
-)
-
-LIMIT 5;
-
-
-
-CREATE OR REPLACE VIEW group_summary AS
-SELECT
-  version,
-  COUNT(*) AS users,
-  SUM(converted) AS conversions,
-  AVG(converted) AS conversion_rate
-FROM read_parquet(
-  'data/processed/practice_campaign.parquet'
-)
-GROUP BY version
-ORDER BY version;
-
-
-CREATE OR REPLACE VIEW daily_conversion AS
-SELECT
-  CAST(event_date AS DATE) AS event_date,
-  version,
-  COUNT(*) AS users,
-  SUM(converted) AS conversions,
-  AVG(converted) AS conversion_rate
-FROM read_parquet(
-  'data/processed/practice_campaign.parquet'
-)
-GROUP BY event_date, version
-ORDER BY event_date, version;
-
-
-CREATE OR REPLACE VIEW data_verification AS
-SELECT
-  COUNT(*) AS total_rows,
-  COUNT(DISTINCT visitor_id) AS distinct_visitors,
-  MIN(CAST(event_date AS DATE)) AS min_date,
-  MAX(CAST(event_date AS DATE)) AS max_date
-FROM read_parquet(
-  'data/processed/practice_campaign.parquet'
-);
+ -- 4.2: DAILY SUMMARY - Time Series by Group
+SELECT 
+    experiment_date,
+    group,
+    COUNT(DISTINCT user_id) AS users,
+    SUM(converted) AS conversions,
+    ROUND(SUM(converted)::FLOAT / COUNT(*)::FLOAT, 6) AS conversion_rate
+FROM 'data/processed/clean_ab_data.parquet'
+GROUP BY experiment_date, group
+ORDER BY experiment_date, group;
  
  
-CREATE OR REPLACE VIEW converted_only AS
-SELECT visitor_id, version, event_date
-FROM read_parquet(
-  'data/processed/practice_campaign.parquet'
-)
-WHERE converted = 1;
+-- 4.3: DATA VERIFICATION - Quality Assurance
+SELECT 
+    COUNT(*) AS total_rows,
+    COUNT(DISTINCT user_id) AS distinct_user_ids,
+    MIN(experiment_date) AS min_experiment_date,
+    MAX(experiment_date) AS max_experiment_date
+FROM 'data/processed/clean_ab_data.parquet';
  
