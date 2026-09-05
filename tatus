@@ -1,0 +1,11 @@
+[33m177d6cd[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Merge pull request #1 from NaderaAlWahidi/add-pipeline-docstrings
+[33m05b3819[m[33m ([m[1;31morigin/add-pipeline-docstrings[m[33m, [m[1;32madd-pipeline-docstrings[m[33m)[m Add docstrings to public pipeline functions
+[33mb5aa159[m Add numpy dependency, use version ranges for all packages and widen duckdb version range to avoid source build failure
+[33m61db5dc[m Simplify requirements.txt to core dependencies only
+[33m77357ba[m Add GitHub Actions workflow to run tests on push and PR
+[33ma2a9ab3[m Fix duplicate-unpacking bug in test_row_count_consistency
+[33maec443e[m Fix R script (summary_stats, prop.test counts) and generate figures
+[33md20f863[m Fix DuckDB query bugs and regenerate group/daily summaries
+[33ma61366c[m Fix pipeline scripts and rerun on full dataset
+[33m42de52a[m Create initial project structure
+[33m3cc9b20[m Create initial project structure
