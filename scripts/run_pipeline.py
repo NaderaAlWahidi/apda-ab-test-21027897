@@ -1,110 +1,110 @@
-# from pathlib import Path
-# import pandas as pd
- 
-# ROOT = Path(__file__).resolve().parents[1]
-# output = ROOT / 'data' / 'processed' / \
-#     'ab_processed_data.parquet'
- 
-# data = pd.DataFrame({
-#     'visitor_id': range(201, 213),
-#     'event_date': pd.to_datetime(
-#         ['2026-08-01'] * 4 +
-#         ['2026-08-02'] * 4 +
-#         ['2026-08-03'] * 4),
-#     'version': ['control', 'control',
-#         'treatment', 'treatment'] * 3,
-#     'converted': [
-#         0,1,0,1, 0,0,1,0, 1,0,1,0]
-# })
-# data.to_parquet(output, index=False)
-
-
-# import argparse
-# import sys
-# from pathlib import Path
-
-# import pandas as pd
-
-# ROOT = Path(__file__).resolve().parents[1]
-# sys.path.insert(0, str(ROOT))
-
-# from src.pipeline import (  # noqa: E402
-#     DEFAULT_INPUT, DEFAULT_OUTPUT_DIR, run_pipeline)
-
-
-# def parse_args(argv=None):
-#     """Parse the --input and --output-dir command line arguments."""
-#     parser = argparse.ArgumentParser(
-#         description='Clean the landing page A/B test experiment records.')
-#     parser.add_argument(
-#         '--input', default=str(DEFAULT_INPUT),
-#         help='Path to the raw ab_data.csv file.')
-#     parser.add_argument(
-#         '--output-dir', default=str(DEFAULT_OUTPUT_DIR),
-#         help='Directory that receives the processed CSV and Parquet files.')
-#     return parser.parse_args(argv)
-
-
-# def report(summary):
-#     """Print the inspection results, row counts and saved file paths."""
-#     inspection = summary['inspection']
-#     counts = summary['row_counts']
-
-#     print('Input file:', summary['input_path'])
-#     print('\n--- Raw data contract ---')
-#     print('Shape:', inspection['shape'])
-#     print('Data types:')
-#     for column, dtype in inspection['dtypes'].items():
-#         print(f'  {column}: {dtype}')
-#     print('Missing values:')
-#     for column, missing in inspection['missing_values'].items():
-#         print(f'  {column}: {missing}')
-#     print('Duplicate user IDs:', inspection['duplicate_user_ids'])
-#     print('Group and landing page counts:')
-#     print(inspection['group_page_counts'].to_string(index=False))
-
-#     print('\n--- Cleaning ---')
-#     print('Rows before cleaning:', counts['rows_before_cleaning'])
-#     print('Rows after assignment cleaning:',
-#           counts['rows_after_assignment_cleaning'],
-#           f"(removed {counts['rows_removed_misaligned']})")
-#     print('Rows after duplicate-user cleaning:',
-#           counts['rows_after_duplicate_user_cleaning'],
-#           f"(removed {counts['rows_removed_duplicate_users']})")
-#     print('Unique user IDs after cleaning:',
-#           summary['clean_data']['user_id'].nunique())
-
-#     print('\n--- Saved files ---')
-#     for label, path in summary['saved_files'].items():
-#         print(f'  {label}: {path}')
-
-
-# def main(argv=None):
-#     """Run the pipeline with the given arguments and print the report."""
-#     args = parse_args(argv)
-#     try:
-#         summary = run_pipeline(args.input, args.output_dir)
-#     except (FileNotFoundError, ValueError) as error:
-#         print(f'Pipeline failed: {error}', file=sys.stderr)
-#         return 1
-#     report(summary)
-#     return 0
-
-
-# if __name__ == '__main__':
-#     pd.set_option('display.width', 100)
-#     raise SystemExit(main())
-
-
-from pathlib import Path
+import argparse
 import sys
-import matplotlib
-import numpy as np
-import pandas as pd
-
-print("Python:", sys.version.split()[0])
-print("Executable:", sys.executable)
-print("Working directory:", Path.cwd())
-print("NumPy:", np.__version__)
-print("pandas:", pd.__version__)
-print("Matplotlib:", matplotlib.__version__)
+from pathlib import Path
+ 
+# Add src directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+ 
+from pipeline import (
+    load_data,
+    inspect_data,
+    validate_data_contract,
+    clean_data,
+    save_data,
+    print_inspection_report,
+    print_cleaning_report
+)
+ 
+ 
+def main():
+    # Parse command-line arguments 
+    parser = argparse.ArgumentParser(
+        description='A/B test data pipeline: load, validate, clean, and save experiment records'
+    )
+    
+    parser.add_argument(
+        '--input',
+        required=True,
+        type=str,
+        help='Path to raw input CSV file (e.g., data/raw/ab_data.csv)'
+    )
+    
+    parser.add_argument(
+        '--output-dir',
+        required=True,
+        type=str,
+        help='Output directory for cleaned data files (e.g., data/processed)'
+    )
+    
+    args = parser.parse_args()
+    
+    print("\n" + "="*70)
+    print("A/B TEST DATA PIPELINE")
+    print("="*70)
+    
+    try:
+        # STEP 1: LOAD DATA
+        print(f"\n[STEP 1] Loading data from: {args.input}")
+        data = load_data(args.input)
+        print(f"✓ Successfully loaded {len(data):,} records")
+        
+        # STEP 2: INSPECT DATA
+        print(f"\n[STEP 2] Inspecting data structure and quality...")
+        inspection_report = inspect_data(data)
+        print_inspection_report(inspection_report)
+        
+        # STEP 3: VALIDATE DATA CONTRACT
+        print(f"\n[STEP 3] Validating data contract...")
+        validate_data_contract(data)
+        print("✓ Data contract validation passed")
+        print("  ✓ All required columns present")
+        print("  ✓ All group values valid (control, treatment)")
+        print("  ✓ All landing_page values valid (old_page, new_page)")
+        print("  ✓ All converted values valid (0, 1)")
+        
+        # STEP 4: CLEAN DATA
+        print(f"\n[STEP 4] Cleaning experiment records...")
+        cleaned_data, cleaning_report = clean_data(data)
+        print_cleaning_report(cleaning_report)
+        print("✓ Data cleaning completed successfully")
+        
+        # STEP 5: SAVE CLEANED DATA
+        print(f"\n[STEP 5] Saving cleaned data to: {args.output_dir}")
+        output_paths = save_data(cleaned_data, args.output_dir)
+        print(f"✓ Saved CSV: {output_paths['csv_path']}")
+        print(f"✓ Saved Parquet: {output_paths['parquet_path']}")
+        
+        # PRINT SUMMARY
+        print("\n" + "="*70)
+        print("PIPELINE EXECUTION SUMMARY")
+        print("="*70)
+        print(f"\nInput file:          {args.input}")
+        print(f"Output directory:    {args.output_dir}")
+        print(f"\nRecords processed:   {cleaning_report['initial_rows']:,}")
+        print(f"Records cleaned:     {cleaning_report['final_rows']:,}")
+        print(f"Records removed:     {cleaning_report['initial_rows'] - cleaning_report['final_rows']:,}")
+        print(f"  - Alignment issues: {cleaning_report['rows_removed_by_alignment']:,}")
+        print(f"  - Duplicates:       {cleaning_report['rows_removed_by_deduplication']:,}")
+        print(f"\nSuccess rate:        {(cleaning_report['final_rows'] / cleaning_report['initial_rows'] * 100):.2f}%")
+        print(f"\n✓ Pipeline completed successfully!")
+        print("="*70 + "\n")
+        
+        return 0
+    
+    except FileNotFoundError as e:
+        print(f"\n✗ ERROR: {e}", file=sys.stderr)
+        return 1
+    
+    except ValueError as e:
+        print(f"\n✗ VALIDATION ERROR: {e}", file=sys.stderr)
+        return 1
+    
+    except Exception as e:
+        print(f"\n✗ UNEXPECTED ERROR: {e}", file=sys.stderr)
+        return 1
+ 
+ 
+if __name__ == "__main__":
+    exit_code = main()
+    sys.exit(exit_code)
+ 
