@@ -3,8 +3,10 @@ import numpy as np
 from pathlib import Path
 
 
+
 def load_data(input_path):
     
+    """Load experiment data from CSV file."""
     try:
         data = pd.read_csv(input_path)
         return data
@@ -15,7 +17,8 @@ def load_data(input_path):
 
 
 def inspect_data(data):
-  
+    
+    """Inspect and report on data quality metrics."""
     inspection_report = {
         'shape': data.shape,
         'columns': list(data.columns),
@@ -31,7 +34,8 @@ def inspect_data(data):
 
 
 def validate_data_contract(data):
-   
+    
+    """Validate that the data contract is satisfied."""
     # Check required columns
     required_columns = ['user_id', 'timestamp', 'group', 'landing_page', 'converted']
     missing_columns = [col for col in required_columns if col not in data.columns]
@@ -75,7 +79,8 @@ def validate_data_contract(data):
 
 
 def clean_data(data):
-
+    
+    """Clean experiment records by removing misalignments and duplicates."""
     # Make a copy to avoid modifying original
     df = data.copy()
     
@@ -136,7 +141,8 @@ def clean_data(data):
 
 
 def save_data(data, output_dir, csv_name='clean_ab_data', parquet_name='clean_ab_data'):
-
+    
+    """Save cleaned data to both CSV and Parquet formats."""
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     
